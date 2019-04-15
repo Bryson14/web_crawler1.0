@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-import requests
+from requests import get, ConnectionError
 import sys
 
 
@@ -9,16 +9,19 @@ def crawl(url: str, depth: int, visited: list, max_depth: int=3):
 	elif url in visited:
 		pass
 	else:
-		print('\t'*depth + url)
 		depth += 1
 		visited.append(url)
-		soup = BeautifulSoup(requests.get(url).text, 'html.parser')
-		html_lines = soup.prettify().split()
-		urls_to_test = [line for line in html_lines if 'href' in line]
-		correct_urls = url_verify(url, urls_to_test)
-		for url in correct_urls:
-			print("URL: ", url)
-			crawl(url, depth, visited, max_depth)
+		try:
+			soup = BeautifulSoup(get(url).text, 'html.parser')
+			html_lines = soup.prettify().split()
+			urls_to_test = [line for line in html_lines if 'href' in line]
+			correct_urls = url_verify(url, urls_to_test)
+			print('\t' * depth + url)
+			for url in correct_urls:
+				print("URL: ", url)
+				crawl(url, depth, visited, max_depth)
+		except ConnectionError:
+			print(f"Unable to reach URL {url}")
 
 
 def url_verify(base_url, url_list):

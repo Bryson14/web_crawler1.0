@@ -14,7 +14,7 @@ def main():
 		if is_a_url(sys.argv[1]):
 			print(f"Crawling from {sys.argv[1]} to a maximum distance of 3 links")
 			start = time.time()
-			sites_found = crawl(sys.argv[1], 0, {})
+			sites_found = crawl(sys.argv[1], 0, {sys.argv[1]})
 			print(f"{sites_found} sites visited in {time.time() - start:.3f} seconds.")
 			sys.exit(1)
 		else:

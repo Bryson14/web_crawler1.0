@@ -15,7 +15,7 @@ def main():
 			print(f"Crawling from {sys.argv[1]} to a maximum distance of 3 links")
 			start = time.time()
 			sites_found = crawl(sys.argv[1], 0, [])
-			print(f"{sites_found} sites visited in {time.time() - start} seconds.")
+			print(f"{sites_found} sites visited in {time.time() - start:.3f} seconds.")
 			sys.exit(1)
 		else:
 			print(f"\tPlease supply a valid URL to this program\n\t{USAGE}")
@@ -27,7 +27,7 @@ def main():
 				print(f"Crawling from {sys.argv[1]} to a maximum distance of {sys.argv[2]} links")
 				start = time.time()
 				sites_found = crawl(sys.argv[1], 0, [], int(sys.argv[2]))
-				print(f"{sites_found} sites visited in {time.time() - start} seconds.")
+				print(f"{sites_found} sites visited in {time.time() - start:.3f} seconds.")
 				sys.exit(1)
 			else:
 				print(f"\tPlease supply a valid URL to this program\n\t{USAGE}")

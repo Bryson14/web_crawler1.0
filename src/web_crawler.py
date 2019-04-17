@@ -1,50 +1,80 @@
 from bs4 import BeautifulSoup
-from requests import get, ConnectionError
-import sys
+from requests import get, exceptions
+from urllib.parse import urlparse, urljoin
 
 
 def crawl(url: str, depth: int, visited: list, max_depth: int=3):
+	print('\t' * depth + url)
 	if depth >= max_depth:
-		pass
+		return 0
 	elif url in visited:
-		pass
+		return 0
 	else:
 		depth += 1
 		visited.append(url)
 		try:
 			soup = BeautifulSoup(get(url).text, 'html.parser')
-			html_lines = soup.prettify().split()
-			urls_to_test = [line for line in html_lines if 'href' in line]
-			correct_urls = url_verify(url, urls_to_test)
-			print('\t' * depth + url)
-			for url in correct_urls:
-				print("URL: ", url)
-				crawl(url, depth, visited, max_depth)
-		except ConnectionError:
-			print(f"Unable to reach URL {url}")
+			urls = [stuff['href'] for stuff in soup.find_all('a', href=True)]
+			more_correct_urls = url_verify(urls)
+			for link in more_correct_urls:
+				o = urlparse(link)
+				if o[0] == '' or o[1] == '':
+					new_link = make_absolute_path(url, link)
+				else:
+					new_link = link
+				if is_a_url(new_link):
+					sites_visited = crawl(new_link, depth, visited, max_depth)
+					return sites_visited + 1
+
+		except exceptions.ConnectionError:
+			print("Connection Error: URL does not exist or can't be connected to")
+			return 0
+		except exceptions.MissingSchema:
+			print("Missing Schema: URL does not exist or can't be connected to")
+			return 0
 
 
-def url_verify(base_url, url_list):
+def make_absolute_path(base, relative):
+	parent = urlparse(base)
+	child = urlparse(relative)
+	new_url = urljoin(parent.scheme, parent.netloc, child.path)
+	return new_url
 
-	if '//' in base_url:  # https stuff still there
-		base_url = (base_url.split('//'))[1].split('/')[0] + ((base_url.split('//'))[0])  # gets https and root up to .com/
-	for i in range(len(url_list)):
-		if base_url not in url_list[i]:
-			url_list[i] = base_url + url_list[i]
+
+def url_verify(url_list):
+	end = False
+	i = 0
+	while not end:
+		if not url_list:
+			end = True
+		elif str(url_list[i]).startswith('#'):
+			url_list.pop(i)
+			if i == len(url_list):
+				end = True
+		elif not isinstance(url_list[i], str):
+			url_list.pop(i)
+			if i == len(url_list):
+				end = True
+		elif '.' not in url_list[i] or len(url_list[i]) < 3:
+			url_list.pop(i)
+			if i == len(url_list):
+				end = True
+		else:
+			if i >= len(url_list) - 1:
+				end = True
+			else:
+				i += 1
+
 	return url_list
 
 
-def main():
-	if len(sys.argv) < 2 or len(sys.argv) > 3:
-		print('\tUSAGE: python3.6 web_crawler.py ABSOLUTE_URL [MAX_SEARCH_DEPTH]')
-		sys.exit(1)
-
-	elif len(sys.argv) == 2:
-		crawl(sys.argv[1], 0, [])
-
-	else:
-		crawl(sys.argv[1], 0, [], int(sys.argv[2]))
-
-
-if __name__ == '__main__':
-	main()
+def is_a_url(url):
+	try:
+		html = get(url)
+		return True
+	except exceptions.ConnectionError:
+		print("*Connection Error: URL does not exist or can't be connected to")
+		return False
+	except exceptions.MissingSchema:
+		print("*Missing Schema: URL does not exist or can't be connected to")
+		return False

@@ -3,35 +3,26 @@ from requests import get, exceptions
 from urllib.parse import urlparse, urljoin
 
 
-def crawl(url: str, depth: int, visited: list, max_depth: int=3):
+def crawl(url: str, depth: int, visited: set, max_depth: int=3):
 	print('\t' * depth + url)
+	sites_visited = 1
 	if depth >= max_depth:
-		return 0
-	elif url in visited:
-		return 0
+		return sites_visited
 	else:
 		depth += 1
-		visited.append(url)
-		try:
-			soup = BeautifulSoup(get(url).text, 'html.parser')
-			urls = [stuff['href'] for stuff in soup.find_all('a', href=True)]
-			more_correct_urls = url_verify(urls)
-			for link in more_correct_urls:
-				o = urlparse(link)
-				if o[0] == '' or o[1] == '':
-					new_link = make_absolute_path(url, link)
-				else:
-					new_link = link
-				if is_a_url(new_link):
-					sites_visited = crawl(new_link, depth, visited, max_depth)
-					return sites_visited + 1
-
-		except exceptions.ConnectionError:
-			print("Connection Error: URL does not exist or can't be connected to")
-			return 0
-		except exceptions.MissingSchema:
-			print("Missing Schema: URL does not exist or can't be connected to")
-			return 0
+		visited.add(url)
+		soup = BeautifulSoup(get(url).text, 'html.parser')
+		urls = [stuff['href'] for stuff in soup.find_all('a', href=True)]
+		more_correct_urls = url_verify(urls)
+		for link in more_correct_urls:
+			o = urlparse(link)
+			if o[0] == '' or o[1] == '':
+				new_link = make_absolute_path(url, link)
+			else:
+				new_link = link
+			if is_a_url(new_link) and new_link not in visited:
+				sites_visited += crawl(new_link, depth, visited, max_depth)
+		return sites_visited
 
 
 def make_absolute_path(base, relative):
@@ -73,8 +64,8 @@ def is_a_url(url):
 		html = get(url)
 		return True
 	except exceptions.ConnectionError:
-		print("*Connection Error: URL does not exist or can't be connected to")
+		print("*Connection Error: URL can't be connected to")
 		return False
 	except exceptions.MissingSchema:
-		print("*Missing Schema: URL does not exist or can't be connected to")
+		print("*Missing Schema: URL does not exist")
 		return False

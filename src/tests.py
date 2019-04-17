@@ -4,16 +4,28 @@ import web_crawler
 
 class TestWebCrawler(unittest.TestCase):
 	def setup(self):
-		self.urls_1 = []
-		self.urls_2 = ['https://www.yahoo.com/']
-		self.urls_3 = ['https://www.yahoo.com/', '#Main']
-		self.urls_4 = ['google.com', 1]
+		pass
+
+	def test_url_verify(self):
+		urls_1 = ['#', '/about/index.php']
+		right_1 = ['/about/index.php']
+		urls_2 = ['https://www.yahoo.com', 'http://usu.edu/myusu/']
+		right_2 = ['https://www.yahoo.com', 'http://usu.edu/myusu/']
+		urls_3 = ['https://www.yahoo.com/', '#Main']
+		right_3 = ['https://www.yahoo.com/']
+		urls_4 = ['google.com', 1, '/']
+		right_4 = ['google.com']
+
+		self.assertEqual(web_crawler.url_verify(urls_1), right_1)
+		self.assertEqual(web_crawler.url_verify(urls_2), right_2)
+		self.assertEqual(web_crawler.url_verify(urls_3), right_3)
+		self.assertEqual(web_crawler.url_verify(urls_4), right_4)
 
 	def test_is_a_url(self):
 		url1 = 'https://addictinggames.com'
 		url2 = 'some_url'
 		url3 = ''
-		url4 = 'waitbutwhy.com'
+		url4 = 'https://waitbutwhy.com'
 
 		self.assertEqual(web_crawler.is_a_url(url1), True)
 		self.assertEqual(web_crawler.is_a_url(url2), False)

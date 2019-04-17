@@ -15,17 +15,20 @@ class TestWebCrawler(unittest.TestCase):
 		right_3 = ['https://www.yahoo.com/']
 		urls_4 = ['google.com', 1, '/']
 		right_4 = ['google.com']
+		urls_5 = []
+		right_5 = []
 
 		self.assertEqual(web_crawler.url_verify(urls_1), right_1)
 		self.assertEqual(web_crawler.url_verify(urls_2), right_2)
 		self.assertEqual(web_crawler.url_verify(urls_3), right_3)
 		self.assertEqual(web_crawler.url_verify(urls_4), right_4)
+		self.assertEqual(web_crawler.url_verify(urls_5), right_5)
 
 	def test_is_a_url(self):
 		url1 = 'https://addictinggames.com'
 		url2 = 'some_url'
 		url3 = ''
-		url4 = 'https://waitbutwhy.com'
+		url4 = 'http://www.waitbutwhy.com'
 
 		self.assertEqual(web_crawler.is_a_url(url1), True)
 		self.assertEqual(web_crawler.is_a_url(url2), False)

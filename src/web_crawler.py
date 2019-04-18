@@ -3,14 +3,14 @@ from requests import get, exceptions
 from urllib.parse import urlparse, urljoin
 
 
-def crawl(url: str, depth: int, visited: set, max_depth: int=3):
+def crawl(url: str, depth: int, visited: set, keyword=None, max_depth: int=3):
 	print('\t' * depth + url)
+	visited.add(url)
 	sites_visited = 1
 	if depth >= max_depth:
 		return sites_visited
 	else:
 		depth += 1
-		visited.add(url)
 		soup = BeautifulSoup(get(url).text, 'html.parser')
 		urls = [stuff['href'] for stuff in soup.find_all('a', href=True)]
 		more_correct_urls = url_verify(urls)
@@ -61,7 +61,7 @@ def url_verify(url_list):
 
 def is_a_url(url):
 	try:
-		html = get(url)
+		get(url)
 		return True
 	except exceptions.ConnectionError:
 		print("*Connection Error: URL can't be connected to")

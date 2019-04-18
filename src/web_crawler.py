@@ -12,6 +12,9 @@ def crawl(url: str, depth: int, visited: set, keyword=None, max_depth: int=3):
 	else:
 		depth += 1
 		soup = BeautifulSoup(get(url).text, 'html.parser')
+		if soup.body.findAll(text=keyword):
+			print(f"Found {keyword} at a depth of {depth} links!")
+			return sites_visited
 		urls = [stuff['href'] for stuff in soup.find_all('a', href=True)]
 		more_correct_urls = url_verify(urls)
 		for link in more_correct_urls:
